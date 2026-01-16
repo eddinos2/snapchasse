@@ -32,11 +32,21 @@ export function Providers({ children }: { children: React.ReactNode }) {
       console.log('🟡 [PROVIDERS] Auth state change:', { 
         event, 
         hasSession: !!session,
-        userId: session?.user?.id 
+        userId: session?.user?.id,
+        currentPath: window.location.pathname
       })
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      
+      // Ne pas refresh si on est sur la page de signin/signup (la redirection va se faire)
+      if (event === 'SIGNED_IN') {
+        const currentPath = window.location.pathname
+        if (currentPath === '/auth/signin' || currentPath === '/auth/signup') {
+          console.log('🟡 [PROVIDERS] SIGNED_IN sur page auth, on laisse la redirection se faire')
+          return
+        }
         console.log('🟡 [PROVIDERS] Refresh de la page pour synchroniser la session')
-        // Refresh the page to update server-side session
+        router.refresh()
+      } else if (event === 'TOKEN_REFRESHED') {
+        console.log('🟡 [PROVIDERS] Refresh de la page pour synchroniser la session')
         router.refresh()
       }
     })

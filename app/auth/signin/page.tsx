@@ -82,13 +82,9 @@ export default function SignInPage() {
       }
       
       log('✅ [SIGNIN] Session créée avec succès')
-      log('🔵 [SIGNIN] Attente 2 secondes avant redirection pour voir les logs...')
+      log('🔵 [SIGNIN] Redirection immédiate vers /dashboard')
       
-      // Attendre 2 secondes pour voir les logs
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      log('🔵 [SIGNIN] Redirection vers /dashboard')
-      // Utiliser window.location pour forcer un rechargement complet et synchroniser la session
+      // Redirection immédiate pour éviter que le provider refresh la page
       window.location.href = '/dashboard'
     } catch (err: any) {
       log('❌ [SIGNIN] Erreur catch:', err.message)
