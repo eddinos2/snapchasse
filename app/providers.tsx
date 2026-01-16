@@ -25,10 +25,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
   )
 
   useEffect(() => {
+    console.log('🟡 [PROVIDERS] Initialisation du listener auth')
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('🟡 [PROVIDERS] Auth state change:', { 
+        event, 
+        hasSession: !!session,
+        userId: session?.user?.id 
+      })
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        console.log('🟡 [PROVIDERS] Refresh de la page pour synchroniser la session')
         // Refresh the page to update server-side session
         router.refresh()
       }

@@ -41,7 +41,12 @@ export async function updateSession(request: NextRequest) {
 
   // If user is authenticated, ensure session is valid
   if (user) {
-    await supabase.auth.getSession()
+    const { data: { session } } = await supabase.auth.getSession()
+    console.log('🟠 [MIDDLEWARE]', request.url, { 
+      hasUser: !!user, 
+      hasSession: !!session,
+      userId: user?.id 
+    })
   }
 
   return supabaseResponse
