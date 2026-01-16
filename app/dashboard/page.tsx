@@ -7,19 +7,29 @@ export default async function DashboardPage() {
   const supabase = await createClient()
   
   // Essayer getUser directement - c'est plus fiable que getSession
-  const {
+  let {
     data: { user },
     error: userError,
   } = await supabase.auth.getUser()
 
-  console.log('🟢 [DASHBOARD] User:', { 
+  console.log('🟢 [DASHBOARD] User (première tentative):', { 
     hasUser: !!user, 
     userError: userError?.message,
     userId: user?.id,
     userEmail: user?.email 
   })
 
-  // Si pas d'utilisateur, rediriger
+  // Si pas d'utilisateur, essayer getSession comme fallback
+  if (!user) {
+    console.log('🟡 [DASHBOARD] Pas d\'utilisateur via getUser, essai avec getSession...')
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session?.user) {
+      user = session.user
+      console.log('✅ [DASHBOARD] Utilisateur trouvé via getSession')
+    }
+  }
+
+  // Si toujours pas d'utilisateur, rediriger
   if (!user) {
     console.log('❌ [DASHBOARD] Pas d\'utilisateur, redirection vers /auth/signin')
     redirect('/auth/signin')

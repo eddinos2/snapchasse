@@ -82,10 +82,18 @@ export default function SignInPage() {
       }
       
       log('✅ [SIGNIN] Connexion réussie')
-      log('🔵 [SIGNIN] Attente 1 seconde pour synchroniser les cookies...')
       
-      // Attendre pour que les cookies soient bien synchronisés
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Forcer le refresh de la session côté serveur
+      log('🔵 [SIGNIN] Appel API pour synchroniser la session...')
+      try {
+        await fetch('/api/auth/refresh', { method: 'POST' })
+        log('✅ [SIGNIN] Session synchronisée')
+      } catch (err) {
+        log('⚠️ [SIGNIN] Erreur sync, on continue quand même')
+      }
+      
+      // Attendre un peu pour que les cookies soient bien écrits
+      await new Promise(resolve => setTimeout(resolve, 500))
       
       log('🔵 [SIGNIN] Redirection vers /dashboard')
       // Forcer un rechargement complet pour synchroniser la session serveur

@@ -34,13 +34,18 @@ export async function updateSession(request: NextRequest) {
   // This is a basic implementation - in production, use Redis or similar
   // For now, we'll rely on Supabase RLS and Netlify's built-in DDoS protection
 
-  // Refresh session - important pour synchroniser les cookies
+  // Important: appeler getUser() pour rafraîchir la session et mettre à jour les cookies
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Forcer la mise à jour de la session pour synchroniser les cookies
+  if (user) {
+    await supabase.auth.getSession()
+  }
+
   // Log pour debug (seulement en dev)
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env.NODE_ENV === 'development' && request.url.includes('/dashboard')) {
     const { data: { session } } = await supabase.auth.getSession()
     console.log('🟠 [MIDDLEWARE]', request.url, { 
       hasUser: !!user, 
