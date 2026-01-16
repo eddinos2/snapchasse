@@ -119,27 +119,40 @@ export function CreateHuntForm({ userId }: { userId: string }) {
 
       if (huntError) throw huntError
 
-      // Create steps - PostGIS will handle the point conversion
-      const stepsToInsert = steps.map((step, index) => {
-        // For PostGIS GEOGRAPHY type, we can pass the coordinates directly
-        // Supabase/PostgREST will handle the conversion
-        return {
-          hunt_id: hunt.id,
-          title: step.title,
-          description: step.description,
-          question: step.question,
-          answer: step.answer,
-          order_index: index,
-          // PostGIS accepts WKT format or we can use a function
-          // For now, we'll insert as text and let PostGIS cast it
-          location: step.latitude !== null && step.longitude !== null
-            ? `SRID=4326;POINT(${step.longitude} ${step.latitude})`
-            : null,
-          radius_meters: step.radius_meters,
-        }
-      })
+      // Create steps - we'll insert them first, then update locations
+      const stepsToInsert = steps.map((step, index) => ({
+        hunt_id: hunt.id,
+        title: step.title,
+        description: step.description,
+        question: step.question,
+        answer: step.answer,
+        order_index: index,
+        radius_meters: step.radius_meters,
+      }))
 
-      // Steps are already inserted above with location updates
+      const { data: insertedSteps, error: stepsError } = await supabase
+        .from('steps')
+        .insert(stepsToInsert)
+        .select()
+
+      if (stepsError) throw stepsError
+
+      // Update steps with location using PostGIS function
+      if (insertedSteps) {
+        for (let i = 0; i < steps.length; i++) {
+          const step = steps[i]
+          if (step.latitude !== null && step.longitude !== null && insertedSteps[i]) {
+            const { error: locationError } = await supabase.rpc('update_step_location', {
+              step_id_param: insertedSteps[i].id,
+              lon: step.longitude,
+              lat: step.latitude,
+            })
+            if (locationError) {
+              console.error('Location update error:', locationError)
+            }
+          }
+        }
+      }
 
       router.push(`/dashboard`)
       router.refresh()
