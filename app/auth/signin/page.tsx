@@ -1,8 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
+import { useSupabase } from '@/app/providers'
 import { z } from 'zod'
 
 const signInSchema = z.object({
@@ -15,74 +17,49 @@ export default function SignInPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const supabase = useSupabase()
+  const router = useRouter()
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
 
-    // Sauvegarder les logs dans localStorage pour qu'ils persistent
-    const log = (message: string, data?: any) => {
-      const timestamp = new Date().toISOString()
-      const logEntry = `[${timestamp}] ${message}${data ? ' ' + JSON.stringify(data) : ''}`
-      console.log(logEntry)
-      const existingLogs = localStorage.getItem('auth_debug_logs') || '[]'
-      const logs = JSON.parse(existingLogs)
-      logs.push(logEntry)
-      localStorage.setItem('auth_debug_logs', JSON.stringify(logs.slice(-50))) // Garder les 50 derniers
-    }
-
-    log('🔵 [SIGNIN] Début de la connexion')
-    log('🔵 [SIGNIN] Email:', email)
-
     try {
+      // Validation
       const validation = signInSchema.safeParse({ email, password })
       if (!validation.success) {
-        log('❌ [SIGNIN] Erreur de validation:', validation.error.errors[0].message)
         setError(validation.error.errors[0].message)
         setLoading(false)
         return
       }
 
-      log('🔵 [SIGNIN] Appel API signin...')
-      // Utiliser l'API route pour gérer la connexion côté serveur
-      // Cela garantit que les cookies sont correctement synchronisés
-      const response = await fetch('/api/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      // Connexion directe avec Supabase client
+      // Le middleware synchronisera automatiquement les cookies
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: validation.data.email,
+        password: validation.data.password,
       })
 
-      const result = await response.json()
-
-      log('🔵 [SIGNIN] Réponse API:', { 
-        status: response.status,
-        hasUser: !!result.user,
-        hasError: !!result.error,
-        error: result.error
-      })
-
-      if (!response.ok && !result.warning) {
-        log('❌ [SIGNIN] Erreur lors de la connexion:', result.error)
-        throw new Error(result.error || 'Erreur de connexion')
+      if (signInError) {
+        setError(signInError.message)
+        setLoading(false)
+        return
       }
 
-      log('✅ [SIGNIN] Connexion réussie via API', result.warning ? '(avec warning)' : '')
-      if (result.warning) {
-        log('⚠️ [SIGNIN]', result.warning)
+      if (!data.user) {
+        setError('La connexion a échoué')
+        setLoading(false)
+        return
       }
-      
-      log('🔵 [SIGNIN] Redirection vers /dashboard')
-      
-      // Attendre un peu pour que les cookies soient bien synchronisés
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      // Utiliser un rechargement complet pour synchroniser la session
-      window.location.href = '/dashboard'
+
+      // Attendre un court instant pour que les cookies soient synchronisés par le middleware
+      await new Promise(resolve => setTimeout(resolve, 300))
+
+      // Redirection vers le dashboard
+      router.push('/dashboard')
+      router.refresh()
     } catch (err: any) {
-      log('❌ [SIGNIN] Erreur catch:', err.message)
       setError(err.message || 'Une erreur est survenue')
       setLoading(false)
     }

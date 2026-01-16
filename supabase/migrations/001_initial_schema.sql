@@ -18,12 +18,17 @@ END $$;
 
 -- Profiles table (extends auth.users)
 CREATE TABLE IF NOT EXISTS profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY,
   email TEXT,
   role user_role_v1 NOT NULL DEFAULT 'participant',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Create default demo profile for MVP (no auth required)
+INSERT INTO profiles (id, email, role)
+VALUES ('00000000-0000-0000-0000-000000000000', 'demo@snapchasse.fr', 'admin')
+ON CONFLICT (id) DO NOTHING;
 
 -- Hunts table
 CREATE TABLE IF NOT EXISTS hunts (

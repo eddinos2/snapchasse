@@ -70,10 +70,54 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-4">5. Contact</h2>
+            <h2 className="text-2xl font-bold mb-4">5. Cookies</h2>
+            <p className="text-retro-light/80 mb-4">
+              Nous utilisons les types de cookies suivants :
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-retro-light/80 ml-4">
+              <li><strong>Cookies essentiels</strong> : Nécessaires au fonctionnement de l'application (authentification, session). Ces cookies ne peuvent pas être désactivés.</li>
+              <li><strong>Cookies analytiques</strong> : Nous aident à comprendre comment les utilisateurs interagissent avec l'application (optionnel).</li>
+              <li><strong>Cookies marketing</strong> : Pour personnaliser votre expérience et afficher du contenu pertinent (optionnel).</li>
+            </ul>
+            <p className="text-retro-light/80 mt-4">
+              Vous pouvez gérer vos préférences de cookies à tout moment via le bandeau de consentement.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold mb-4">6. Conservation des données</h2>
             <p className="text-retro-light/80">
-              Pour toute question concernant vos données personnelles, contactez-nous via l'interface
-              de l'application ou supprimez votre compte depuis les paramètres.
+              Vos données sont conservées aussi longtemps que nécessaire pour fournir nos services.
+              Vous pouvez demander la suppression de vos données à tout moment. Les données de géolocalisation
+              sont supprimées automatiquement après la fin d'un jeu de piste.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold mb-4">7. Partage des données</h2>
+            <p className="text-retro-light/80">
+              Nous ne vendons ni ne louons vos données personnelles à des tiers. Vos données peuvent être
+              partagées uniquement avec :
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-retro-light/80 ml-4 mt-2">
+              <li>Les services d'hébergement (Supabase, Netlify) pour le fonctionnement de l'application</li>
+              <li>Les services de cartographie (Mapbox) pour la géolocalisation</li>
+              <li>Les autorités légales si requis par la loi</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold mb-4">8. Contact et DPO</h2>
+            <p className="text-retro-light/80 mb-4">
+              Pour toute question concernant vos données personnelles ou pour exercer vos droits RGPD :
+            </p>
+            <ul className="list-disc list-inside space-y-2 text-retro-light/80 ml-4">
+              <li>Contactez-nous via l'interface de l'application</li>
+              <li>Demandez l'export de vos données depuis votre profil</li>
+              <li>Demandez la suppression de votre compte depuis les paramètres</li>
+            </ul>
+            <p className="text-retro-light/80 mt-4">
+              <strong>Délégué à la Protection des Données (DPO)</strong> : Disponible via l'interface de l'application.
             </p>
           </section>
 

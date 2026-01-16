@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
+import { ToastProvider } from '@/components/ui/Toast'
 
 const SupabaseContext = createContext<SupabaseClient | null>(null)
 
@@ -25,23 +26,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
   )
 
   useEffect(() => {
-    console.log('🟡 [PROVIDERS] Initialisation du listener auth')
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('🟡 [PROVIDERS] Auth state change:', { 
-        event, 
-        hasSession: !!session,
-        userId: session?.user?.id,
-        currentPath: window.location.pathname
-      })
-      
-      // Désactiver le refresh automatique - la redirection se fera manuellement
-      // Le refresh cause des problèmes de redirection
-      // if (event === 'TOKEN_REFRESHED') {
-      //   console.log('🟡 [PROVIDERS] Refresh de la page pour synchroniser la session')
-      //   router.refresh()
-      // }
+      // Only refresh on token refresh to keep session in sync
+      // Don't refresh on SIGNED_IN to avoid redirect loops
+      if (event === 'TOKEN_REFRESHED') {
+        router.refresh()
+      }
     })
 
     return () => {
@@ -51,7 +43,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <SupabaseContext.Provider value={supabase}>
-      {children}
+      <ToastProvider>
+        {children}
+      </ToastProvider>
     </SupabaseContext.Provider>
   )
 }

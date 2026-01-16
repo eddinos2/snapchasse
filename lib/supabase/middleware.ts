@@ -1,10 +1,39 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { rateLimiter, getRateLimitConfig } from '@/lib/security/rate-limiter'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
+
+  // Rate limiting - only apply to API routes and auth routes, not page requests
+  const path = new URL(request.url).pathname
+  
+  // Skip rate limiting for static assets and page requests (GET requests that are not API)
+  const isApiRoute = path.startsWith('/api/')
+  const isAuthRoute = path.startsWith('/auth/')
+  
+  // Only apply rate limiting to API and auth routes
+  if (isApiRoute || isAuthRoute) {
+    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const config = getRateLimitConfig(path)
+    
+    if (!rateLimiter.check(ip, config.maxRequests, config.windowMs)) {
+      const resetTime = rateLimiter.getResetTime(ip)
+      return NextResponse.json(
+        { error: 'Too many requests' },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': resetTime ? Math.ceil((resetTime - Date.now()) / 1000).toString() : '60',
+            'X-RateLimit-Limit': config.maxRequests.toString(),
+            'X-RateLimit-Remaining': '0',
+          },
+        }
+      )
+    }
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,8 +43,8 @@ export async function updateSession(request: NextRequest) {
         getAll() {
           return request.cookies.getAll()
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+        setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
           })
@@ -27,31 +56,18 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // Rate limiting check (simple implementation)
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
-  const rateLimitKey = `rate_limit_${ip}`
-  
-  // This is a basic implementation - in production, use Redis or similar
-  // For now, we'll rely on Supabase RLS and Netlify's built-in DDoS protection
-
-  // Important: appeler getUser() pour rafraîchir la session et mettre à jour les cookies
+  // Refresh session - this updates the cookies automatically
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Forcer la mise à jour de la session pour synchroniser les cookies
-  if (user) {
-    await supabase.auth.getSession()
-  }
-
-  // Log pour debug (seulement en dev)
-  if (process.env.NODE_ENV === 'development' && request.url.includes('/dashboard')) {
-    const { data: { session } } = await supabase.auth.getSession()
-    console.log('🟠 [MIDDLEWARE]', request.url, { 
-      hasUser: !!user, 
-      hasSession: !!session,
-      userId: user?.id 
-    })
+  // Add rate limit headers to response (only for API/auth routes)
+  if (isApiRoute || isAuthRoute) {
+    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    const config = getRateLimitConfig(path)
+    const remaining = rateLimiter.getRemaining(ip, config.maxRequests)
+    supabaseResponse.headers.set('X-RateLimit-Limit', config.maxRequests.toString())
+    supabaseResponse.headers.set('X-RateLimit-Remaining', remaining.toString())
   }
 
   return supabaseResponse

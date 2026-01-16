@@ -2,15 +2,17 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { HuntGame } from '@/components/HuntGame'
 
-export default async function HuntPage({ params }: { params: { id: string } }) {
+export default async function HuntPage({ 
+  params,
+  searchParams,
+}: { 
+  params: { id: string }
+  searchParams: { session?: string }
+}) {
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
 
-  if (!user) {
-    redirect('/auth/signin')
-  }
+  // No auth required - use anonymous user ID
+  const anonymousUserId = 'anonymous-player'
 
   // Get hunt
   const { data: hunt, error: huntError } = await supabase
@@ -30,11 +32,11 @@ export default async function HuntPage({ params }: { params: { id: string } }) {
     .eq('hunt_id', params.id)
     .order('order_index', { ascending: true })
 
-  // Get user progress
+  // Get user progress (using anonymous ID)
   const { data: progress } = await supabase
     .from('user_progress')
     .select('step_id')
-    .eq('user_id', user.id)
+    .eq('user_id', anonymousUserId)
     .eq('hunt_id', params.id)
 
   const completedStepIds = new Set(progress?.map((p) => p.step_id) || [])
@@ -43,8 +45,9 @@ export default async function HuntPage({ params }: { params: { id: string } }) {
     <HuntGame
       hunt={hunt}
       steps={steps || []}
-      userId={user.id}
+      userId={anonymousUserId}
       completedStepIds={completedStepIds}
+      sessionId={searchParams.session}
     />
   )
 }
