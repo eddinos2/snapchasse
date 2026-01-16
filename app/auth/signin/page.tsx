@@ -40,14 +40,18 @@ export default function SignInPage() {
 
       if (error) throw error
 
-      // Attendre un peu pour que la session soit établie
-      await new Promise(resolve => setTimeout(resolve, 100))
+      // Vérifier que la session est bien créée
+      const { data: { session } } = await supabase.auth.getSession()
       
-      // Rafraîchir la session
-      await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('La session n\'a pas pu être créée')
+      }
       
-      router.push('/dashboard')
-      router.refresh()
+      // Rediriger après un court délai pour laisser le temps au middleware de mettre à jour les cookies
+      setTimeout(() => {
+        router.push('/dashboard')
+        router.refresh()
+      }, 200)
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue')
     } finally {

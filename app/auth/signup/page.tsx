@@ -38,7 +38,7 @@ export default function SignUpPage() {
         return
       }
 
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -48,8 +48,21 @@ export default function SignUpPage() {
 
       if (error) throw error
 
-      router.push('/dashboard')
-      router.refresh()
+      // Vérifier que la session est bien créée (même si email confirmation est requise)
+      if (data.session) {
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (session) {
+          setTimeout(() => {
+            router.push('/dashboard')
+            router.refresh()
+          }, 200)
+        } else {
+          setError('Veuillez vérifier votre email pour confirmer votre compte')
+        }
+      } else {
+        setError('Un email de confirmation a été envoyé. Veuillez vérifier votre boîte mail.')
+      }
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue')
     } finally {
