@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     // Créer le client Supabase avec les cookies de la requête
     const cookieStore = await cookies()
-    let response = NextResponse.json({})
+    const response = new NextResponse()
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -74,15 +74,19 @@ export async function POST(request: NextRequest) {
     if (!session) {
       console.error('❌ [API SIGNIN] Session non créée après signInWithPassword')
       // Même sans session, on peut retourner l'utilisateur - les cookies sont peut-être déjà écrits
-      return NextResponse.json(
+      const jsonResponse = NextResponse.json(
         { 
           user: data.user,
           warning: 'Session non immédiatement disponible, mais cookies écrits'
-        },
-        {
-          headers: response.headers,
         }
       )
+      
+      // Copier les cookies de la réponse Supabase vers la réponse JSON
+      response.cookies.getAll().forEach((cookie) => {
+        jsonResponse.cookies.set(cookie.name, cookie.value, cookie)
+      })
+      
+      return jsonResponse
     }
 
     console.log('✅ [API SIGNIN] Connexion réussie:', {
@@ -90,16 +94,20 @@ export async function POST(request: NextRequest) {
       hasSession: !!session
     })
 
-    // Retourner la réponse avec les cookies mis à jour
-    return NextResponse.json(
+    // Créer la réponse JSON avec les cookies
+    const jsonResponse = NextResponse.json(
       { 
         user: data.user,
         session: session 
-      },
-      {
-        headers: response.headers,
       }
     )
+    
+    // Copier les cookies de la réponse Supabase vers la réponse JSON
+    response.cookies.getAll().forEach((cookie) => {
+      jsonResponse.cookies.set(cookie.name, cookie.value, cookie)
+    })
+    
+    return jsonResponse
   } catch (error: any) {
     console.error('❌ [API SIGNIN] Erreur catch:', error)
     return NextResponse.json(
