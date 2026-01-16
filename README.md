@@ -8,15 +8,15 @@ Application moderne de jeu de piste (scavenger hunt) avec géolocalisation, auth
 - ✅ Gestion des rôles (Administrateur / Participant)
 - ✅ Géolocalisation en temps réel (Mapbox)
 - ✅ Création et gestion de parcours d'énigmes
-- ✅ Interface rétro-moderne avec animations fluides
-- ✅ Conformité RGPD
-- ✅ Protection contre DDoS et attaques
+- ✅ Interface rétro-moderne avec animations fluides (Framer Motion)
+- ✅ Conformité RGPD (cookies, consentement, politique de confidentialité)
+- ✅ Protection contre DDoS et attaques (headers de sécurité, rate limiting)
 
 ## 🛠️ Stack Technique
 
-- **Frontend**: Next.js 14, React, TypeScript
+- **Frontend**: Next.js 14 (App Router), React, TypeScript
 - **Styling**: Tailwind CSS, Framer Motion
-- **Backend**: Supabase (PostgreSQL + Auth)
+- **Backend**: Supabase (PostgreSQL + Auth + PostGIS)
 - **Maps**: Mapbox GL
 - **Validation**: Zod
 - **Déploiement**: Netlify
@@ -27,22 +27,37 @@ Application moderne de jeu de piste (scavenger hunt) avec géolocalisation, auth
 npm install
 ```
 
-## 🔧 Configuration
+## 🔧 Configuration Rapide
 
-1. Créer un fichier `.env.local` avec :
+Voir le fichier [SETUP.md](./SETUP.md) pour les instructions détaillées.
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-NEXT_PUBLIC_MAPBOX_TOKEN=your_mapbox_token
-```
+### Étapes principales :
 
-2. Lancer le serveur de développement :
+1. **Supabase** : Créer un projet et exécuter la migration SQL
+2. **Mapbox** : Obtenir un token d'accès
+3. **Variables d'environnement** : Créer `.env.local` avec les credentials
+4. **Lancer** : `npm run dev`
 
-```bash
-npm run dev
-```
+## 🎮 Utilisation
+
+1. **Inscription/Connexion** : Créez un compte ou connectez-vous
+2. **Créer un jeu** (Admin) : Accédez au dashboard et créez un nouveau jeu de piste
+3. **Jouer** : Sélectionnez un jeu actif et suivez les étapes géolocalisées
+4. **Résoudre les énigmes** : Répondez aux questions pour progresser
+
+## 🔒 Sécurité
+
+- Headers de sécurité configurés
+- Protection DDoS via Netlify
+- Rate limiting via middleware
+- Validation des données avec Zod
+- RLS (Row Level Security) sur toutes les tables
+- Conformité RGPD complète
 
 ## 📝 License
 
 MIT
+
+## 🤝 Contribution
+
+Ce projet a été créé pour un hackathon. Les contributions sont les bienvenues !
