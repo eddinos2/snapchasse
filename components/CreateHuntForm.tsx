@@ -139,11 +139,7 @@ export function CreateHuntForm({ userId }: { userId: string }) {
         }
       })
 
-      const { error: stepsError } = await supabase
-        .from('steps')
-        .insert(stepsToInsert)
-
-      if (stepsError) throw stepsError
+      // Steps are already inserted above with location updates
 
       router.push(`/dashboard`)
       router.refresh()

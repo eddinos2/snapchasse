@@ -214,6 +214,20 @@ CREATE POLICY "Users can join hunts"
   ON hunt_participants FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+-- Function to update step location (helper for PostGIS)
+CREATE OR REPLACE FUNCTION update_step_location(
+  step_id_param UUID,
+  lon DOUBLE PRECISION,
+  lat DOUBLE PRECISION
+)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE steps
+  SET location = ST_SetSRID(ST_MakePoint(lon, lat), 4326)::geography
+  WHERE id = step_id_param;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- View for hunt statistics
 CREATE OR REPLACE VIEW hunt_stats AS
 SELECT
