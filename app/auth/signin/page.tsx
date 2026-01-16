@@ -82,10 +82,16 @@ export default function SignInPage() {
       }
       
       log('✅ [SIGNIN] Session créée avec succès')
-      log('🔵 [SIGNIN] Redirection immédiate vers /dashboard')
+      log('🔵 [SIGNIN] Redirection vers /dashboard')
       
-      // Redirection immédiate pour éviter que le provider refresh la page
-      window.location.href = '/dashboard'
+      // Utiliser router.replace pour une navigation côté client plus fluide
+      // puis forcer un rechargement complet pour synchroniser la session serveur
+      router.replace('/dashboard')
+      
+      // Forcer un rechargement complet après un court délai pour synchroniser la session
+      setTimeout(() => {
+        window.location.href = '/dashboard'
+      }, 100)
     } catch (err: any) {
       log('❌ [SIGNIN] Erreur catch:', err.message)
       setError(err.message || 'Une erreur est survenue')

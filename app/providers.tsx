@@ -36,19 +36,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
         currentPath: window.location.pathname
       })
       
-      // Ne pas refresh si on est sur la page de signin/signup (la redirection va se faire)
-      if (event === 'SIGNED_IN') {
-        const currentPath = window.location.pathname
-        if (currentPath === '/auth/signin' || currentPath === '/auth/signup') {
-          console.log('🟡 [PROVIDERS] SIGNED_IN sur page auth, on laisse la redirection se faire')
-          return
-        }
-        console.log('🟡 [PROVIDERS] Refresh de la page pour synchroniser la session')
-        router.refresh()
-      } else if (event === 'TOKEN_REFRESHED') {
-        console.log('🟡 [PROVIDERS] Refresh de la page pour synchroniser la session')
-        router.refresh()
-      }
+      // Désactiver le refresh automatique - la redirection se fera manuellement
+      // Le refresh cause des problèmes de redirection
+      // if (event === 'TOKEN_REFRESHED') {
+      //   console.log('🟡 [PROVIDERS] Refresh de la page pour synchroniser la session')
+      //   router.refresh()
+      // }
     })
 
     return () => {

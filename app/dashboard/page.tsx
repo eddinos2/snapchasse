@@ -15,12 +15,22 @@ export default async function DashboardPage() {
   console.log('🟢 [DASHBOARD] Session:', { 
     hasSession: !!session, 
     sessionError: sessionError?.message,
-    userId: session?.user?.id 
+    userId: session?.user?.id,
+    accessToken: session?.access_token ? 'present' : 'missing'
   })
   
   if (!session) {
     console.log('❌ [DASHBOARD] Pas de session, redirection vers /auth/signin')
-    redirect('/auth/signin')
+    console.log('🟢 [DASHBOARD] Tentative de récupération de session alternative...')
+    
+    // Essayer getUser comme fallback
+    const { data: { user: fallbackUser } } = await supabase.auth.getUser()
+    if (!fallbackUser) {
+      console.log('❌ [DASHBOARD] Aucun utilisateur trouvé, redirection')
+      redirect('/auth/signin')
+    } else {
+      console.log('🟢 [DASHBOARD] Utilisateur trouvé via getUser:', fallbackUser.id)
+    }
   }
 
   const {
