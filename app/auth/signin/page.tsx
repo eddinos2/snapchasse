@@ -65,27 +65,27 @@ export default function SignInPage() {
         throw error
       }
 
-      log('🔵 [SIGNIN] Vérification de la session...')
-      // Vérifier que la session est bien créée
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      log('🔵 [SIGNIN] Vérification de l\'utilisateur...')
+      // Vérifier que l'utilisateur est bien connecté
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
       
-      log('🔵 [SIGNIN] Session:', { 
-        hasSession: !!session, 
-        sessionError: sessionError?.message,
-        userId: session?.user?.id,
-        userEmail: session?.user?.email
+      log('🔵 [SIGNIN] User:', { 
+        hasUser: !!currentUser, 
+        userError: userError?.message,
+        userId: currentUser?.id,
+        userEmail: currentUser?.email
       })
       
-      if (!session) {
-        log('❌ [SIGNIN] Aucune session trouvée')
-        throw new Error('La session n\'a pas pu être créée')
+      if (!currentUser) {
+        log('❌ [SIGNIN] Aucun utilisateur trouvé')
+        throw new Error('La connexion a échoué')
       }
       
-      log('✅ [SIGNIN] Session créée avec succès')
-      log('🔵 [SIGNIN] Attente 500ms pour laisser les cookies se synchroniser...')
+      log('✅ [SIGNIN] Connexion réussie')
+      log('🔵 [SIGNIN] Attente 1 seconde pour synchroniser les cookies...')
       
-      // Attendre un peu pour que les cookies soient bien écrits
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Attendre pour que les cookies soient bien synchronisés
+      await new Promise(resolve => setTimeout(resolve, 1000))
       
       log('🔵 [SIGNIN] Redirection vers /dashboard')
       // Forcer un rechargement complet pour synchroniser la session serveur
