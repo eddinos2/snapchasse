@@ -65,7 +65,10 @@ export default function TestAuthPage() {
               <div>
                 <p className="mb-4">✅ Vous êtes connecté en tant que: {user.email}</p>
                 <button
-                  onClick={() => router.push('/dashboard')}
+                  onClick={() => {
+                    // Forcer un rechargement complet pour synchroniser les cookies
+                    window.location.href = '/dashboard'
+                  }}
                   className="px-4 py-2 bg-retro-primary text-retro-dark font-bold rounded-lg mr-2"
                 >
                   Aller au Dashboard

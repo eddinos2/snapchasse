@@ -14,11 +14,19 @@ export async function createClient() {
         },
         setAll(cookiesToSet) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              // S'assurer que les cookies sont accessibles depuis le client
+              cookieStore.set(name, value, {
+                ...options,
+                httpOnly: false, // Permettre l'accès depuis JavaScript
+                sameSite: 'lax',
+                secure: process.env.NODE_ENV === 'production',
+                path: '/',
+              })
+            })
+          } catch (error) {
             // The `setAll` method was called from a Server Component.
+            console.error('Error setting cookies:', error)
           }
         },
       },
