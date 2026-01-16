@@ -82,8 +82,12 @@ export default function SignInPage() {
       }
       
       log('✅ [SIGNIN] Session créée avec succès')
-      log('🔵 [SIGNIN] Redirection immédiate vers /dashboard')
+      log('🔵 [SIGNIN] Attente 500ms pour laisser les cookies se synchroniser...')
       
+      // Attendre un peu pour que les cookies soient bien écrits
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      log('🔵 [SIGNIN] Redirection vers /dashboard')
       // Forcer un rechargement complet pour synchroniser la session serveur
       window.location.href = '/dashboard'
     } catch (err: any) {

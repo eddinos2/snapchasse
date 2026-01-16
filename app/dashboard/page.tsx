@@ -6,33 +6,7 @@ export default async function DashboardPage() {
   console.log('🟢 [DASHBOARD] Page dashboard chargée')
   const supabase = await createClient()
   
-  // Get session first to ensure it's valid
-  const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession()
-  
-  console.log('🟢 [DASHBOARD] Session:', { 
-    hasSession: !!session, 
-    sessionError: sessionError?.message,
-    userId: session?.user?.id,
-    accessToken: session?.access_token ? 'present' : 'missing'
-  })
-  
-  if (!session) {
-    console.log('❌ [DASHBOARD] Pas de session, redirection vers /auth/signin')
-    console.log('🟢 [DASHBOARD] Tentative de récupération de session alternative...')
-    
-    // Essayer getUser comme fallback
-    const { data: { user: fallbackUser } } = await supabase.auth.getUser()
-    if (!fallbackUser) {
-      console.log('❌ [DASHBOARD] Aucun utilisateur trouvé, redirection')
-      redirect('/auth/signin')
-    } else {
-      console.log('🟢 [DASHBOARD] Utilisateur trouvé via getUser:', fallbackUser.id)
-    }
-  }
-
+  // Essayer getUser directement - c'est plus fiable que getSession
   const {
     data: { user },
     error: userError,
@@ -45,6 +19,7 @@ export default async function DashboardPage() {
     userEmail: user?.email 
   })
 
+  // Si pas d'utilisateur, rediriger
   if (!user) {
     console.log('❌ [DASHBOARD] Pas d\'utilisateur, redirection vers /auth/signin')
     redirect('/auth/signin')
