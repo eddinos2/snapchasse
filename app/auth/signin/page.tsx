@@ -1,10 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { useSupabase } from '@/app/providers'
 import { z } from 'zod'
 
 const signInSchema = z.object({
@@ -17,8 +15,6 @@ export default function SignInPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const supabase = useSupabase()
-  const router = useRouter()
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,45 +44,39 @@ export default function SignInPage() {
         return
       }
 
-      log('🔵 [SIGNIN] Appel signInWithPassword...')
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      log('🔵 [SIGNIN] Appel API signin...')
+      // Utiliser l'API route pour gérer la connexion côté serveur
+      // Cela garantit que les cookies sont correctement synchronisés
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
       })
 
-      log('🔵 [SIGNIN] Réponse signInWithPassword:', { 
-        hasData: !!data, 
-        hasError: !!error,
-        error: error?.message 
+      const result = await response.json()
+
+      log('🔵 [SIGNIN] Réponse API:', { 
+        status: response.status,
+        hasUser: !!result.user,
+        hasError: !!result.error,
+        error: result.error
       })
 
-      if (error) {
-        log('❌ [SIGNIN] Erreur lors de la connexion:', error.message)
-        throw error
+      if (!response.ok) {
+        log('❌ [SIGNIN] Erreur lors de la connexion:', result.error)
+        throw new Error(result.error || 'Erreur de connexion')
       }
 
-      log('🔵 [SIGNIN] Vérification de l\'utilisateur...')
-      // Vérifier que l'utilisateur est bien connecté
-      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
+      log('✅ [SIGNIN] Connexion réussie via API')
+      log('🔵 [SIGNIN] Redirection vers /dashboard')
       
-      log('🔵 [SIGNIN] User:', { 
-        hasUser: !!currentUser, 
-        userError: userError?.message,
-        userId: currentUser?.id,
-        userEmail: currentUser?.email
-      })
+      // Attendre un peu pour que les cookies soient bien synchronisés
+      await new Promise(resolve => setTimeout(resolve, 300))
       
-      if (!currentUser) {
-        log('❌ [SIGNIN] Aucun utilisateur trouvé')
-        throw new Error('La connexion a échoué')
-      }
-      
-      log('✅ [SIGNIN] Connexion réussie')
-      log('🔵 [SIGNIN] Redirection immédiate vers /dashboard')
-      
-      // Utiliser un rechargement complet immédiatement
-      // Les cookies seront synchronisés par le middleware
-      window.location.replace('/dashboard')
+      // Utiliser un rechargement complet pour synchroniser la session
+      window.location.href = '/dashboard'
     } catch (err: any) {
       log('❌ [SIGNIN] Erreur catch:', err.message)
       setError(err.message || 'Une erreur est survenue')
