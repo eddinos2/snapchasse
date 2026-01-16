@@ -23,6 +23,10 @@ export default async function DashboardPage() {
   if (!user) {
     console.log('🟡 [DASHBOARD] Pas d\'utilisateur via getUser, essai avec getSession...')
     const { data: { session } } = await supabase.auth.getSession()
+    console.log('🟡 [DASHBOARD] Session:', { 
+      hasSession: !!session,
+      userId: session?.user?.id 
+    })
     if (session?.user) {
       user = session.user
       console.log('✅ [DASHBOARD] Utilisateur trouvé via getSession')

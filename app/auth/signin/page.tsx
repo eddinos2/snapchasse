@@ -82,22 +82,11 @@ export default function SignInPage() {
       }
       
       log('✅ [SIGNIN] Connexion réussie')
+      log('🔵 [SIGNIN] Redirection immédiate vers /dashboard')
       
-      // Forcer le refresh de la session côté serveur
-      log('🔵 [SIGNIN] Appel API pour synchroniser la session...')
-      try {
-        await fetch('/api/auth/refresh', { method: 'POST' })
-        log('✅ [SIGNIN] Session synchronisée')
-      } catch (err) {
-        log('⚠️ [SIGNIN] Erreur sync, on continue quand même')
-      }
-      
-      // Attendre un peu pour que les cookies soient bien écrits
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      log('🔵 [SIGNIN] Redirection vers /dashboard')
-      // Forcer un rechargement complet pour synchroniser la session serveur
-      window.location.href = '/dashboard'
+      // Utiliser un rechargement complet immédiatement
+      // Les cookies seront synchronisés par le middleware
+      window.location.replace('/dashboard')
     } catch (err: any) {
       log('❌ [SIGNIN] Erreur catch:', err.message)
       setError(err.message || 'Une erreur est survenue')
