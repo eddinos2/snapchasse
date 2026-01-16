@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-retro: 'Courier New', monospace;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+  background: linear-gradient(135deg, #0F0F1E 0%, #1A1A2E 100%);
+  color: #F5F5F5;
+  font-family: var(--font-retro);
+}
+
+body {
+  min-height: 100vh;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .retro-border {
+    border: 2px solid #FF6B6B;
+    box-shadow: 
+      0 0 10px rgba(255, 107, 107, 0.5),
+      inset 0 0 10px rgba(255, 107, 107, 0.1);
+  }
+  
+  .retro-glow {
+    text-shadow: 
+      0 0 5px #FF6B6B,
+      0 0 10px #FF6B6B,
+      0 0 15px #FF6B6B;
+  }
+  
+  .glass-effect {
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1A1A2E;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #FF6B6B;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF5252;
+}
