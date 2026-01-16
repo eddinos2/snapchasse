@@ -47,11 +47,8 @@ export default function SignInPage() {
         throw new Error('La session n\'a pas pu être créée')
       }
       
-      // Rediriger après un court délai pour laisser le temps au middleware de mettre à jour les cookies
-      setTimeout(() => {
-        router.push('/dashboard')
-        router.refresh()
-      }, 200)
+      // Utiliser window.location pour forcer un rechargement complet et synchroniser la session
+      window.location.href = '/dashboard'
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue')
     } finally {

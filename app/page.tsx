@@ -28,12 +28,19 @@ export default async function Home() {
     }
   )
 
+  // Vérifier la session d'abord
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
 
-  if (user) {
-    redirect('/dashboard')
+  if (session) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    
+    if (user) {
+      redirect('/dashboard')
+    }
   }
 
   return <HomePage />
