@@ -25,40 +25,51 @@ export default function SignInPage() {
     setError(null)
     setLoading(true)
 
-    console.log('🔵 [SIGNIN] Début de la connexion')
-    console.log('🔵 [SIGNIN] Email:', email)
+    // Sauvegarder les logs dans localStorage pour qu'ils persistent
+    const log = (message: string, data?: any) => {
+      const timestamp = new Date().toISOString()
+      const logEntry = `[${timestamp}] ${message}${data ? ' ' + JSON.stringify(data) : ''}`
+      console.log(logEntry)
+      const existingLogs = localStorage.getItem('auth_debug_logs') || '[]'
+      const logs = JSON.parse(existingLogs)
+      logs.push(logEntry)
+      localStorage.setItem('auth_debug_logs', JSON.stringify(logs.slice(-50))) // Garder les 50 derniers
+    }
+
+    log('🔵 [SIGNIN] Début de la connexion')
+    log('🔵 [SIGNIN] Email:', email)
 
     try {
       const validation = signInSchema.safeParse({ email, password })
       if (!validation.success) {
-        console.log('❌ [SIGNIN] Erreur de validation:', validation.error.errors[0].message)
+        log('❌ [SIGNIN] Erreur de validation:', validation.error.errors[0].message)
         setError(validation.error.errors[0].message)
         setLoading(false)
         return
       }
 
-      console.log('🔵 [SIGNIN] Appel signInWithPassword...')
+      log('🔵 [SIGNIN] Appel signInWithPassword...')
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      console.log('🔵 [SIGNIN] Réponse signInWithPassword:', { 
+      log('🔵 [SIGNIN] Réponse signInWithPassword:', { 
         hasData: !!data, 
         hasError: !!error,
         error: error?.message 
       })
 
       if (error) {
-        console.log('❌ [SIGNIN] Erreur lors de la connexion:', error.message)
+        log('❌ [SIGNIN] Erreur lors de la connexion:', error.message)
         throw error
       }
 
-      console.log('🔵 [SIGNIN] Vérification de la session...')
+      log('🔵 [SIGNIN] Vérification de la session...')
       // Vérifier que la session est bien créée
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
       
-      console.log('🔵 [SIGNIN] Session:', { 
+      log('🔵 [SIGNIN] Session:', { 
         hasSession: !!session, 
         sessionError: sessionError?.message,
         userId: session?.user?.id,
@@ -66,17 +77,22 @@ export default function SignInPage() {
       })
       
       if (!session) {
-        console.log('❌ [SIGNIN] Aucune session trouvée')
+        log('❌ [SIGNIN] Aucune session trouvée')
         throw new Error('La session n\'a pas pu être créée')
       }
       
-      console.log('✅ [SIGNIN] Session créée avec succès, redirection vers /dashboard')
+      log('✅ [SIGNIN] Session créée avec succès')
+      log('🔵 [SIGNIN] Attente 2 secondes avant redirection pour voir les logs...')
+      
+      // Attendre 2 secondes pour voir les logs
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      log('🔵 [SIGNIN] Redirection vers /dashboard')
       // Utiliser window.location pour forcer un rechargement complet et synchroniser la session
       window.location.href = '/dashboard'
     } catch (err: any) {
-      console.log('❌ [SIGNIN] Erreur catch:', err.message)
+      log('❌ [SIGNIN] Erreur catch:', err.message)
       setError(err.message || 'Une erreur est survenue')
-    } finally {
       setLoading(false)
     }
   }
