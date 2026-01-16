@@ -33,13 +33,19 @@ export default function SignInPage() {
         return
       }
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
       if (error) throw error
 
+      // Attendre un peu pour que la session soit établie
+      await new Promise(resolve => setTimeout(resolve, 100))
+      
+      // Rafraîchir la session
+      await supabase.auth.getSession()
+      
       router.push('/dashboard')
       router.refresh()
     } catch (err: any) {

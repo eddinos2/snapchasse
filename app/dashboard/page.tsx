@@ -4,6 +4,16 @@ import { DashboardContent } from '@/components/DashboardContent'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
+  
+  // Get session first to ensure it's valid
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+  
+  if (!session) {
+    redirect('/auth/signin')
+  }
+
   const {
     data: { user },
   } = await supabase.auth.getUser()

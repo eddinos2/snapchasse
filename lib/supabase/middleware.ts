@@ -34,7 +34,15 @@ export async function updateSession(request: NextRequest) {
   // This is a basic implementation - in production, use Redis or similar
   // For now, we'll rely on Supabase RLS and Netlify's built-in DDoS protection
 
-  await supabase.auth.getUser()
+  // Refresh session if needed
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // If user is authenticated, ensure session is valid
+  if (user) {
+    await supabase.auth.getSession()
+  }
 
   return supabaseResponse
 }
