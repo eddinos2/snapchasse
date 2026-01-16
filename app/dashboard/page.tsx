@@ -22,9 +22,10 @@ export default async function DashboardPage() {
   // Si pas d'utilisateur, essayer getSession comme fallback
   if (!user) {
     console.log('🟡 [DASHBOARD] Pas d\'utilisateur via getUser, essai avec getSession...')
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
     console.log('🟡 [DASHBOARD] Session:', { 
       hasSession: !!session,
+      sessionError: sessionError?.message,
       userId: session?.user?.id 
     })
     if (session?.user) {
