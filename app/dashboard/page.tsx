@@ -50,8 +50,8 @@ export default async function DashboardPage() {
     redirect('/auth/signin')
   }
 
-  // Get user role
-  const { data: profile, error: profileError } = await supabase
+  // Get user role - créer le profil s'il n'existe pas
+  let { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
@@ -62,6 +62,27 @@ export default async function DashboardPage() {
     profileError: profileError?.message,
     role: profile?.role 
   })
+
+  // Si le profil n'existe pas, le créer
+  if (!profile && user) {
+    console.log('🟡 [DASHBOARD] Profil manquant, création...')
+    const { data: newProfile, error: createError } = await supabase
+      .from('profiles')
+      .insert({
+        id: user.id,
+        email: user.email,
+        role: 'participant'
+      })
+      .select()
+      .single()
+    
+    if (createError) {
+      console.log('❌ [DASHBOARD] Erreur création profil:', createError.message)
+    } else {
+      console.log('✅ [DASHBOARD] Profil créé:', newProfile)
+      profile = newProfile
+    }
+  }
 
   const role = profile?.role || 'participant'
 
