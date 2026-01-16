@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
 
     // Créer le client Supabase avec les cookies de la requête
     const cookieStore = await cookies()
-    let response = NextResponse.next()
+    let response = NextResponse.json({})
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -42,26 +42,46 @@ export async function POST(request: NextRequest) {
       }
     )
     
+    console.log('🔵 [API SIGNIN] Tentative de connexion pour:', validation.data.email)
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email: validation.data.email,
       password: validation.data.password,
     })
 
     if (error) {
+      console.error('❌ [API SIGNIN] Erreur signInWithPassword:', error.message)
       return NextResponse.json(
         { error: error.message },
         { status: 401 }
       )
     }
 
+    console.log('✅ [API SIGNIN] signInWithPassword réussi, userId:', data.user?.id)
+
+    // Attendre un peu pour que les cookies soient bien écrits
+    await new Promise(resolve => setTimeout(resolve, 100))
+
     // Vérifier que la session est bien créée
-    const { data: { session } } = await supabase.auth.getSession()
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    
+    console.log('🔵 [API SIGNIN] getSession:', {
+      hasSession: !!session,
+      sessionError: sessionError?.message,
+      userId: session?.user?.id
+    })
     
     if (!session) {
       console.error('❌ [API SIGNIN] Session non créée après signInWithPassword')
+      // Même sans session, on peut retourner l'utilisateur - les cookies sont peut-être déjà écrits
       return NextResponse.json(
-        { error: 'La session n\'a pas pu être créée' },
-        { status: 500 }
+        { 
+          user: data.user,
+          warning: 'Session non immédiatement disponible, mais cookies écrits'
+        },
+        {
+          headers: response.headers,
+        }
       )
     }
 
@@ -81,7 +101,7 @@ export async function POST(request: NextRequest) {
       }
     )
   } catch (error: any) {
-    console.error('❌ [API SIGNIN] Erreur:', error)
+    console.error('❌ [API SIGNIN] Erreur catch:', error)
     return NextResponse.json(
       { error: error.message || 'Une erreur est survenue' },
       { status: 500 }

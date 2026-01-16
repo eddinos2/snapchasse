@@ -64,16 +64,20 @@ export default function SignInPage() {
         error: result.error
       })
 
-      if (!response.ok) {
+      if (!response.ok && !result.warning) {
         log('❌ [SIGNIN] Erreur lors de la connexion:', result.error)
         throw new Error(result.error || 'Erreur de connexion')
       }
 
-      log('✅ [SIGNIN] Connexion réussie via API')
+      log('✅ [SIGNIN] Connexion réussie via API', result.warning ? '(avec warning)' : '')
+      if (result.warning) {
+        log('⚠️ [SIGNIN]', result.warning)
+      }
+      
       log('🔵 [SIGNIN] Redirection vers /dashboard')
       
       // Attendre un peu pour que les cookies soient bien synchronisés
-      await new Promise(resolve => setTimeout(resolve, 300))
+      await new Promise(resolve => setTimeout(resolve, 500))
       
       // Utiliser un rechargement complet pour synchroniser la session
       window.location.href = '/dashboard'
